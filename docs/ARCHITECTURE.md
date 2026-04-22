@@ -64,54 +64,6 @@ sequenceDiagram
 
 ---
 
-## ✅ Task CRUD Flow
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant Frontend as React Frontend
-    participant AuthMW as JWT Middleware
-    participant Backend as Express Backend
-    participant DB as MySQL Database
-
-    User->>Frontend: Interact with Dashboard
-
-    Note over Frontend,AuthMW: Every request includes Authorization: Bearer <token>
-
-    Frontend->>AuthMW: HTTP Request
-    AuthMW->>AuthMW: Verify JWT
-    alt Token Invalid
-        AuthMW-->>Frontend: 401 Unauthorized
-    else Token Valid
-        AuthMW->>Backend: Attach req.user, proceed
-    end
-
-    alt Create Task
-        Frontend->>Backend: POST /api/tasks { title, status... }
-        Backend->>Backend: Validate via Joi
-        Backend->>DB: INSERT INTO tasks
-        DB-->>Backend: New task row
-        Backend-->>Frontend: 201 Created { task }
-    else List Tasks
-        Frontend->>Backend: GET /api/tasks?page=1&status=pending&search=bug
-        Backend->>DB: SELECT ... WHERE userId=? AND status=? AND title LIKE ? LIMIT ? OFFSET ?
-        DB-->>Backend: Tasks array + total count
-        Backend-->>Frontend: 200 OK { tasks, page, pages, total }
-    else Update Task
-        Frontend->>Backend: PUT /api/tasks/:id { title, status... }
-        Backend->>DB: SELECT task by id and userId
-        DB-->>Backend: Task exists
-        Backend->>DB: UPDATE tasks SET ...
-        Backend-->>Frontend: 200 OK { updatedTask }
-    else Soft Delete Task
-        Frontend->>Backend: DELETE /api/tasks/:id
-        Backend->>DB: UPDATE tasks SET isDeleted=true WHERE id=?
-        Backend-->>Frontend: 200 OK { message: "Task removed" }
-    end
-
-    Frontend->>User: Re-render task list
-
----
 
 ## 🛡️ Admin Management Flow
 
